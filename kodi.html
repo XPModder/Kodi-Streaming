@@ -1366,7 +1366,7 @@
 
 
         xhr4 = new XMLHttpRequest();
-        xhr4.open("GET", kodiAddress + "jsonrpc?request={%22jsonrpc%22:%20%222.0%22,%20%22method%22:%20%22VideoLibrary.GetEpisodes%22,%20%22params%22:%20{%22tvshowid%22:%20" + showID + ",%20%22season%22:%20" + seasonIndex + ",%20%22properties%22:%20[%22file%22]},%20%22id%22:%20%22libTvShows%22}");
+        xhr4.open("GET", kodiAddress + "jsonrpc?request={%22jsonrpc%22:%20%222.0%22,%20%22method%22:%20%22VideoLibrary.GetEpisodes%22,%20%22params%22:%20{%22tvshowid%22:%20" + showID + ",%20%22season%22:%20" + seasonIndex + ",%20%22properties%22:%20[%22file%22,%20%22episode%22]},%20%22id%22:%20%22libTvShows%22}");
         xhr4.setRequestHeader("Authorization", "Basic " + kodiAuth);
         xhr4.setRequestHeader("Access-Control-Allow-Origin", "*")
         xhr4.withCredentials = true;
@@ -1378,9 +1378,23 @@
 
                 episodesJSON = JSON.parse(episodes);
 
-                for (j = 0; j < episodesJSON.result.episodes.length; j++){
+                var eps = episodesJSON.result.episodes;
 
-                    var currentEpisode = episodesJSON.result.episodes[j];
+                eps.sort((a, b) => {
+                    if (Number.parseInt(a.episode) < Number.parseInt(b.episode)){
+                        return -1;
+                    }
+                    if (Number.parseInt(a.episode) > Number.parseInt(b.episode)){
+                        return 1;
+                    }
+                    return 0;
+                });
+
+                console.log(eps);
+
+                for (j = 0; j < eps.length; j++){
+
+                    var currentEpisode = eps[j];
 
                     var episodeID = currentEpisode.episodeid;
                     var episodeLabel = currentEpisode.label;
@@ -1408,7 +1422,9 @@
                 var elementID = "T" + showID + "S" + seasonIndex + "E" + episodeID;
 
                 var element = document.getElementById(elementID);
-                element.classList.add("active");
+                if (element){
+                    element.classList.add("active");
+                }
 
                 var sel = document.getElementById("Select-" + elementID);
                 sel.setAttribute("selected", "");
@@ -1431,9 +1447,6 @@
 
     function onRescanClick(){
 
-        document.getElementById("rescanButton").innerText = "Scanning...";
-        document.getElementById("rescanButton").disabled = true;
-
         var obj = new Object();
         
         obj.jsonrpc = "2.0";
@@ -1454,8 +1467,7 @@
 
             if (this.readyState == 4 && this.status == 200) {
 
-                document.getElementById("rescanButton").innerText = "Rescan Library";
-                document.getElementById("rescanButton").disabled = false;
+                
 
             }
         }
@@ -1482,8 +1494,7 @@
 
             if (this.readyState == 4 && this.status == 200) {
 
-                document.getElementById("rescanButton").innerText = "Rescan Library";
-                document.getElementById("rescanButton").disabled = false;
+                
 
             }
         }
