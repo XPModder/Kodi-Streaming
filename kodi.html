@@ -1503,8 +1503,15 @@
         }
         xhr7.send(str);
 
+        var timeout = setTimeout(onCleanComplete, 30000);
 
-        obj = new Object();
+    }
+
+
+    function onCleanComplete(){
+
+
+        var obj = new Object();
         
         obj.jsonrpc = "2.0";
         obj.id = "scanVideoLibrary";
@@ -1512,7 +1519,7 @@
         obj.params = new Object();
         obj.params.showdialogs = false;
 
-        str = JSON.stringify(obj);
+        var str = JSON.stringify(obj);
 
         var xhr8 = new XMLHttpRequest();
         xhr8.open("POST", kodiAddress + "jsonrpc");
