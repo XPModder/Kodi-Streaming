@@ -1628,6 +1628,9 @@
 
         var result = "";
 
+        path = path.replaceAll("&", "%26");
+        path = path.replaceAll("?", "%3F");
+
         var xhr = new XMLHttpRequest();
         xhr.open("GET", kodiAddress + "jsonrpc?request={%22jsonrpc%22:%20%222.0%22,%20%22method%22:%20%22Files.PrepareDownload%22,%20%22params%22:%20{%20%22path%22:%20%22" + path + "%22%20},%20%22id%22:%20%22libFiles%22}") ;
         xhr.setRequestHeader("Authorization", "Basic " + kodiAuth);
@@ -1660,6 +1663,9 @@
         console.log("getting file for: " + path);
 
         var result = "";
+
+        path = path.replaceAll("&", "%26");
+        path = path.replaceAll("?", "%3F");
 
         var xhr = new XMLHttpRequest();
         xhr.open("GET", kodiAddress + "jsonrpc?request={%22jsonrpc%22:%20%222.0%22,%20%22method%22:%20%22Files.PrepareDownload%22,%20%22params%22:%20{%20%22path%22:%20%22" + path + "%22%20},%20%22id%22:%20%22libFiles%22}") ;
