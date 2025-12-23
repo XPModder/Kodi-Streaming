@@ -861,6 +861,17 @@
 
 
 
+
+        #picturesFilters {
+            margin-top: 2em;
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: none;
+        }
+
+
+
         @media screen and (max-width: 1200px) {
             .sidebar {
                 width: 4em;
@@ -1057,6 +1068,12 @@
                 width: calc(100% - 2em);
             }
 
+
+            #picturesFilters {
+                position: unset;
+                margin-top: 0;
+            }
+
         }
 
 
@@ -1233,25 +1250,19 @@
         </div>
         <div id="pictures">
             <div class="section-title" id="picturesFolderTitle">Folders</div>
+            <div id="picturesFilters" class="filter-container-inner">
+                <div>Year:</div>
+                <select id="picturesYearSelect" onchange="onChangePicturesFilters()">
+                    <option value="all">All</option>
+                </select>
+                <br/>
+                <div>Month:</div>
+                <select id="picturesMonthSelect" onchange="onChangePicturesFilters()">
+                    <option value="all">All</option>
+                </select>
+            </div>
             <div id="picturesFoldersContent">
                 Loading...
-            </div>
-            <div class="section-title" id="picturesContentTitle">
-                Pictures
-                <div class="filter-container-inner">
-                    <div>Year:</div>
-                    <select id="picturesYearSelect" onchange="onChangeSeriesFilters()">
-                        <option value="all">All</option>
-                    </select>
-                    <br/>
-                    <div>Month:</div>
-                    <select id="picturesMonthSelect" onchange="onChangeSeriesFilters()">
-                        <option value="all">All</option>
-                    </select>
-                </div>
-            </div>
-            <div id="picturesContent">
-                
             </div>
             <div id="picturesViewer" class="imageViewer">
                 <button id="picturesViewClose" class="imageViewerClose" onclick="closeEnlargeImage()">🗙</button>
@@ -2462,6 +2473,26 @@
 
     }
 
+
+
+    function onChangePicturesFilters(){
+        var yearSelect = document.getElementById("picturesYearSelect").value;
+        var monthSelect = document.getElementById("picturesMonthSelect").value;
+
+        var cards = document.querySelectorAll(".card.picture-card");
+        for (i = 0; i < cards.length; i++){
+            var currentCard = cards[i];
+            var month = currentCard.querySelector("img").dataset.month;
+            var year = currentCard.querySelector("img").dataset.year;
+
+            currentCard.style.display = "none";
+            if (yearSelect == "all" || Number.parseInt(yearSelect) == Number.parseInt(year)){
+                if (monthSelect == "all" || Number.parseInt(monthSelect) == Number.parseInt(month)){
+                    currentCard.style.display = "inline-block";
+                }
+            }
+        }
+    }
 
 
 
@@ -3994,7 +4025,7 @@
     //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-    function getImageMeta(imgElmnt, i1, i2, i3) {
+    function getImageMeta(imgElmnt) {
 
         
         EXIF.getData(imgElmnt, function() {
@@ -4009,23 +4040,69 @@
             date = date.split(":");
             time = time.split(":");
 
-            picturs[i1].files[i2].files[i3].year = Number.parseInt(date[0]);
             imgElmnt.dataset.year = Number.parseInt(date[0]);
 
-            picturs[i1].files[i2].files[i3].month = Number.parseInt(date[1]);
             imgElmnt.dataset.month = Number.parseInt(date[1]);
 
-            picturs[i1].files[i2].files[i3].day = Number.parseInt(date[2]);
             imgElmnt.dataset.day = Number.parseInt(date[2]);
 
-            picturs[i1].files[i2].files[i3].hour = Number.parseInt(time[0]);
             imgElmnt.dataset.hour = Number.parseInt(time[0]);
 
-            picturs[i1].files[i2].files[i3].minute = Number.parseInt(time[1]);
             imgElmnt.dataset.minute = Number.parseInt(time[1]);
 
-            picturs[i1].files[i2].files[i3].second = Number.parseInt(time[2]);
             imgElmnt.dataset.second = Number.parseInt(time[2]);
+
+            var yearOptions = document.getElementById("picturesYearSelect").options;
+            var opts = [];
+            var hasYear = false;
+            for (let i = 0; i < yearOptions.length; i++){
+                opts.push(yearOptions[i]);
+                if (yearOptions[i].value == date[0]){
+                    hasYear = true;
+                }
+            }
+            if (!hasYear){
+                var newOpt = document.createElement("option");
+                newOpt.value = date[0];
+                newOpt.innerText = date[0];
+                opts.push(newOpt);
+            }
+
+            opts.sort((a, b) => {if(a.value < b.value){return -1;}else if(a.value == b.value){return 0;}else{return 1;}});
+
+            for (let i = 0; i < yearOptions.length; i++){
+                document.getElementById("picturesYearSelect").options.remove(0);
+            }
+            for (let i = 0; i < opts.length; i++){
+                document.getElementById("picturesYearSelect").options.add(opts[i]);
+            }
+
+
+            opts = [];
+
+            var monthOptions = document.getElementById("picturesMonthSelect").options;
+            var hasMonth = false;
+            for (let i = 0; i < monthOptions.length; i++){
+                opts.push(monthOptions[i]);
+                if (monthOptions[i].value == date[1]){
+                    hasMonth = true;
+                }
+            }
+            if (!hasMonth){
+                var newOpt = document.createElement("option");
+                newOpt.value = date[1];
+                newOpt.innerText = date[1];
+                opts.push(newOpt);
+            }
+
+            opts.sort((a, b) => {if(a.value < b.value){return -1;}else if(a.value == b.value){return 0;}else{return 1;}});
+
+            for (let i = 0; i < monthOptions.length; i++){
+                document.getElementById("picturesMonthSelect").options.remove(0);
+            }
+            for (let i = 0; i < opts.length; i++){
+                document.getElementById("picturesMonthSelect").options.add(opts[i]);
+            }
 
         });
 
@@ -5090,6 +5167,7 @@
 
                 var html = "<div class='music-card card'><a id='picture.-1' href='javascript:window.history.back();'><img src='" + icon + "'><div>..</div></a></div>";
 
+                var hasFiles = false;
 
                 for (i = 0; i < pictureFolder.result.files.length; i++){
 
@@ -5105,8 +5183,9 @@
                         if (getFileType(file) != "image"){  //Show only images
                             continue;
                         }
+                        hasFiles = true;
 
-                        html += "<div class='music-card card picture-card' id='picture." + i + "' ><a onclick='enlargeImage(\"" + btoa("vfs/" + file) + "\", " + i + ")'><img id='picture.img." + i + "' src='" + kodiAddress + "vfs/" + file + "'><div>" + label + "</div></a></div>";
+                        html += "<div class='music-card card picture-card' id='picture." + i + "' ><a onclick='enlargeImage(\"" + btoa("vfs/" + file) + "\", " + i + ")'><img id='picture.img." + i + "' src='" + kodiAddress + "vfs/" + file + "' onload='getImageMeta(this)' ><div>" + label + "</div></a></div>";
                     }
                     else {
                         html += "<div class='music-card card'><a id='picture." + i + "' href='?page=pictures&pictureFolder=" + btoa(file) + "&folderTitle=" + btoa(label) + "'><img src='" + icon + "'><div>" + label + "</div></a></div>";
@@ -5115,6 +5194,10 @@
                 }
 
                 document.getElementById("picturesFoldersContent").innerHTML = html;
+
+                if (hasFiles){
+                    document.getElementById("picturesFilters").style.display = "block";
+                }
 
                 activeXHRs--;
                 xhrsRunning();
